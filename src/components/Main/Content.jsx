@@ -31,11 +31,11 @@ const Content = () => {
     <div className="flex-1 min-h-screen pb-[15vh] relative w-full">
       <div className="flex items-center justify-between text-xl p-5 text-[#585858]">
         <p>GForce</p>
-        <img
+        {/* <img
           src={user}
           alt=""
           className="w-10 h-10 object-contain rounded-[50%]"
-        />
+        /> */}
       </div>
       <div className="container max-w-4xl w-full mx-auto">
         {!response ? (

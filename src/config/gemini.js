@@ -5,7 +5,7 @@ async function main(prompt) {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
   const config = { responseMimeType: 'text/plain' };
-  const model = 'gemini-1.5-flash';
+  const model = 'gemini-2.5-pro';
 
   const contents = [
     { role: 'user', parts: [{ text: prompt }] },
