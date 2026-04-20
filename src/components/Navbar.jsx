@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MdMenu, MdClose } from "react-icons/md";
+import {Link} from "react-router-dom"
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
