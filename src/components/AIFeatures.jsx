@@ -1,88 +1,121 @@
-import React, { useEffect, useRef } from "react";
-import { MdSpeed, MdSecurity, MdOutlineSupportAgent } from "react-icons/md";
-import { FaRobot, FaLightbulb } from "react-icons/fa";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import React from "react";
+import {
+  MdSpeed,
+  MdSecurity,
+  MdAutoAwesome,
+  MdOutlinePsychology,
+} from "react-icons/md";
+import { FaRobot, FaBolt } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const features = [
   {
-    icon: <FaRobot size={40} className="text-indigo-500" />,
-    title: "Intelligent Responses",
+    icon: <FaRobot size={38} className="text-cyan-400" />,
+    title: "Gemini Powered Intelligence",
     description:
-      "GForce provides accurate and context-aware AI responses to your queries instantly.",
+      "Built on Google's Gemini model to deliver accurate, context-aware, and smart prompt responses instantly.",
   },
   {
-    icon: <MdSpeed size={40} className="text-indigo-500" />,
-    title: "Lightning Fast",
+    icon: <MdSpeed size={38} className="text-purple-400" />,
+    title: "Lightning Fast Results",
     description:
-      "Experience ultra-fast processing speeds ensuring minimal wait times.",
+      "Get responses in seconds with an optimized AI workflow designed for speed and performance.",
   },
   {
-    icon: <MdSecurity size={40} className="text-indigo-500" />,
-    title: "Secure & Private",
+    icon: <MdOutlinePsychology size={38} className="text-cyan-400" />,
+    title: "Prompt Understanding",
     description:
-      "Your data and privacy are protected with end-to-end encryption and strict policies.",
+      "Interprets your prompts naturally and returns relevant, structured, and useful answers.",
   },
   {
-    icon: <FaLightbulb size={40} className="text-indigo-500" />,
-    title: "Innovative AI Tools",
+    icon: <MdSecurity size={38} className="text-purple-400" />,
+    title: "Secure Experience",
     description:
-      "Access cutting-edge AI features designed to boost creativity and productivity.",
+      "Your interactions stay protected with a privacy-focused and reliable AI environment.",
   },
-//   {
-//     icon: <MdOutlineSupportAgent size={40} className="text-indigo-500" />,
-//     title: "24/7 Support",
-//     description:
-//       "Our team is always available to assist you with any questions or issues.",
-//   },
+  {
+    icon: <MdAutoAwesome size={38} className="text-cyan-400" />,
+    title: "Creative Assistance",
+    description:
+      "Generate ideas, content, code, plans, and solutions whenever inspiration is needed.",
+  },
+  {
+    icon: <FaBolt size={38} className="text-purple-400" />,
+    title: "Future Ready Platform",
+    description:
+      "Designed to scale with upcoming AI upgrades, features, and modern use cases.",
+  },
 ];
 
 const AIFeatures = () => {
-  const cardsRef = useRef([]);
-
-  useEffect(() => {
-    cardsRef.current.forEach((card, i) => {
-      gsap.fromTo(
-        card,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 80%",
-            toggleActions: "play none none none",
-          },
-          delay: i * 0.15,
-        }
-      );
-    });
-  }, []);
-
   return (
-    <section id="why-choose-us" className="max-w-7xl mx-auto px-6 py-20">
-      <h2 className="text-4xl font-extrabold mb-12 text-white">
-        Why Choose GForce AI?
-      </h2>
+    <section
+      id="features"
+      className="relative py-24 px-6 bg-[#020617] overflow-hidden"
+    >
+      {/* Background Glow */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-600/10 blur-[130px] rounded-full"></div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
-        {features.map((feature, index) => (
-          <div
-            key={index}
-            ref={(el) => (cardsRef.current[index] = el)}
-            className="bg-white bg-opacity-20 backdrop-blur-md rounded-lg p-6 shadow-lg border border-white border-opacity-10 hover:shadow-indigo-300 transition-shadow cursor-default"
-          >
-            <div className="mb-4">{feature.icon}</div>
-            <h3 className="text-xl font-semibold text-indigo-900 mb-2">
-              {feature.title}
-            </h3>
-            <p className="text-indigo-800 text-sm sm:text-base">{feature.description}</p>
-          </div>
-        ))}
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1 }}
+          className="text-center mb-16"
+        >
+          <p className="text-cyan-400 font-semibold tracking-widest uppercase mb-3">
+            Why Choose Us
+          </p>
+
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white">
+            Powerful Features of{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+              GForce AI
+            </span>
+          </h2>
+
+          <p className="text-gray-400 mt-5 max-w-2xl mx-auto">
+            Experience next-generation AI responses powered by Gemini with speed,
+            intelligence, creativity, and reliability.
+          </p>
+        </motion.div>
+
+        {/* Cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{
+                duration: 0.8,
+                delay: index * 0.12,
+                ease: "easeOut",
+              }}
+              whileHover={{ y: -8 }}
+              className="group bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-7 hover:border-cyan-400/30 transition-all duration-300 shadow-xl"
+            >
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="mb-5 w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center"
+              >
+                {feature.icon}
+              </motion.div>
+
+              <h3 className="text-xl font-semibold text-white mb-3">
+                {feature.title}
+              </h3>
+
+              <p className="text-gray-400 leading-relaxed text-sm sm:text-base">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
