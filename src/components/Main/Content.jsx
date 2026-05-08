@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaCompass,
@@ -47,6 +47,8 @@ const Content = () => {
 
   /* Session User */
   const [user, setUser] = useState(null);
+
+  
 
   /* Modal States */
   const [authOpen, setAuthOpen] = useState(false);
@@ -101,6 +103,51 @@ const Content = () => {
     if (!input.trim()) return;
     onSent();
   };
+
+  // const [input, setInput] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const fileRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleVoice = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {   
+      alert("Your browser does not support Speech Recognition.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognistion.start(); 
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput((prev) => prev + " " + transcript);
+    };
+  };
+
+  const onSend = () => {
+      if (!input.trim() && !imagePreview) return;
+
+      handleSend({
+        text: input,
+        image: imagePreview,    
+      });
+      
+      setInput("");
+      setImagePreview(null);
+    };
 
   return (
     <>
@@ -235,6 +282,22 @@ const Content = () => {
 
   {/* Input Area */}
   <div className="mt-10 w-full mx-auto">
+    {/* Image Preview */}
+    {imagePreview && (
+      <div className="mb-4 relative w-fit">
+        <img
+          src={imagePreview}
+          alt="Preview"
+          className="w-28 h-28 object-cover rounded-2xl border"
+        />
+        <button
+            onClick={() => setImagePreview(null)}
+            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+          >
+            <MdClose />
+          </button>
+      </div>
+    )}
     <div className="rounded-3xl border border-slate-200 bg-white shadow-xl px-4 py-2 flex items-end gap-2">
       <textarea
         rows="1"
@@ -251,16 +314,26 @@ const Content = () => {
       />
 
       <div className="flex items-center gap-1 pb-1">
-        <button className="p-2 rounded-xl hover:bg-slate-100 transition">
+        <button className="p-2 rounded-xl hover:bg-slate-100 transition" 
+        onClick={() => fileRef.current.click()}>
           <MdPhoto className="text-xl text-slate-600" />
+          
         </button>
+        <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
 
-        <button className="p-2 rounded-xl hover:bg-slate-100 transition">
+        <button className="p-2 rounded-xl hover:bg-slate-100 transition"
+        onClick={handleVoice}>
           <MdMic className="text-xl text-slate-600" />
         </button>
 
         <button
-          onClick={handleSend}
+          onClick={onSend}
           className="p-2.5 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-600 text-white hover:scale-105 transition"
         >
           <MdSend className="text-lg" />

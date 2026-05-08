@@ -51,7 +51,7 @@ const Sidebar = () => {
                 exit={{ opacity: 0, x: -8 }}
                 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-violet-600 text-transparent bg-clip-text"
               >
-                GForce
+              
               </motion.h2>
             )}
           </AnimatePresence>
