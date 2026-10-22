@@ -1,91 +1,94 @@
-
-import { createContext, useState } from "react";
-import main from "../config/gemini";
+import { createContext, useRef, useState } from "react";
+import { streamMain } from "../config/gemini";
 
 export const Context = createContext();
 
+// Formats the FULL raw text every time. Formatting per chunk would break
+// when "**" gets split across two chunks.
+const formatResponse = (raw) => {
+  const escaped = raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return escaped
+    .split("**")
+    .map((part, i) => (i % 2 ? `<b>${part}</b>` : part))
+    .join("")
+    .replace(/\*/g, "<br/>");
+};
+
 const ContextProvider = (props) => {
-    const [input , setInput] = useState("");
-    const [recentPrompt , setRecentPrompt] = useState("");
-    const [prevPrompts , setPrevPrompts] = useState([]);
-    const [response , setResponse] = useState(false);
-    const [loading , setLoading] = useState(false);
-    const [responseData , setResponseData] = useState("");
+  const [input, setInput] = useState("");
+  const [recentPrompt, setRecentPrompt] = useState("");
+  const [prevPrompts, setPrevPrompts] = useState([]);
+  const [response, setResponse] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [responseData, setResponseData] = useState("");
+  const abortRef = useRef(null);
 
-    const delaypara = (index , nextword) => {
-      setTimeout(function(){
-        setResponseData(prev => prev + nextword);
-      },75*index);
-    }
-
-    const newChat = () => {
-  setLoading(false);
-  setResponse(false);
-
-  // ⬇️  clear what the UI remembers
-  setInput("");        // empty the text field
-  setRecentPrompt(""); // forget last shown prompt
-  setResponseData(""); // optional: clear old answer
-};
-
-
-    
-    const onSent = async (rawPrompt) => {
-  const prompt = (rawPrompt ?? input).trim();
-  if (!prompt) return;               // ignore empty submissions
-
-  setLoading(true);
-  setResponse(true);
-  setResponseData("");
-  setRecentPrompt(prompt);
-
-  // 👉 avoid duplicates: add prompt only if not already first
-  setPrevPrompts(prev =>
-    prev[0] === prompt ? prev : [prompt, ...prev.filter(p => p !== prompt)]
-  );
-
-  try {
-    const res = await main(prompt);
-
-    // ‑‑‑ format response like you did before ‑‑‑
-    const boldConverted = res
-      .split("**")
-      .map((part, i) => (i % 2 ? `<b>${part}</b>` : part))
-      .join("");
-    const lineBreaks = boldConverted.replace(/\*/g, "<br/>");
-    const words = lineBreaks.split(" ");
-
-    // type‑writer effect
-    for (let i = 0; i < words.length; i++) {
-      await new Promise(r => setTimeout(r, 75));
-      setResponseData(prev => prev + words[i] + " ");
-    }
-  } finally {
+  const newChat = () => {
+    abortRef.current?.abort(); // stop any stream still running
     setLoading(false);
+    setResponse(false);
     setInput("");
-  }
-};
-    
-    // onSent("What is NextJS?")
-    
-    const contextValue = {
-      prevPrompts,
-      setPrevPrompts,
-      onSent,
-      setRecentPrompt,
-      recentPrompt,
-      response,
-      loading,
-      responseData,
-      input,
-      setInput,    
-      newChat
-    };
+    setRecentPrompt("");
+    setResponseData("");
+  };
 
-    return (
-        <Context.Provider value={contextValue}>
-        {props.children}
-        </Context.Provider>
+  const onSent = async (rawPrompt) => {
+    const prompt = (rawPrompt ?? input).trim();
+    if (!prompt) return;
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+    setResponse(true);
+    setResponseData("");
+    setRecentPrompt(prompt);
+    setPrevPrompts((prev) =>
+      prev[0] === prompt ? prev : [prompt, ...prev.filter((p) => p !== prompt)]
     );
-  }
-export default ContextProvider;    
+
+    let raw = "";
+    try {
+      await streamMain(
+        prompt,
+        (chunk) => {
+          raw += chunk;
+          setLoading(false); // hide the loader as soon as text starts arriving
+          setResponseData(formatResponse(raw));
+        },
+        controller.signal
+      );
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      setResponseData(`<i>${formatResponse(err.message)}</i>`);
+    } finally {
+      if (abortRef.current === controller) {
+        setLoading(false);
+        setInput("");
+      }
+    }
+  };
+
+  const contextValue = {
+    prevPrompts,
+    setPrevPrompts,
+    onSent,
+    setRecentPrompt,
+    recentPrompt,
+    response,
+    loading,
+    responseData,
+    input,
+    setInput,
+    newChat,
+  };
+
+  return <Context.Provider value={contextValue}>{props.children}</Context.Provider>;
+};
+
+export default ContextProvider;

@@ -1,68 +1,51 @@
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-import { GoogleGenAI } from '@google/genai';
-
-// ✅ Reuse client (don’t recreate every call)
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-// ✅ Throttle control
-let lastCallTime = 0;
-const MIN_DELAY = 2000; // 2 seconds between requests
-
-// ✅ Retry helper with exponential backoff
-async function withRetry(fn, retries = 3, delay = 1000) {
-  try {
-    return await fn();
-  } catch (err) {
-    if (retries === 0) throw err;
-
-    console.warn('Retrying after error:', err.message);
-
-    await new Promise((res) => setTimeout(res, delay));
-    return withRetry(fn, retries - 1, delay * 2);
-  }
-}
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 async function main(prompt) {
-  // ✅ Throttle check
-  const now = Date.now();
-  if (now - lastCallTime < MIN_DELAY) {
-    throw new Error('Rate limit: Too many requests. Please wait a moment.');
-  }
-  lastCallTime = now;
+  const res = await fetch(`${API_URL}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
 
-  const config = { responseMimeType: 'text/plain' };
-
-  // ✅ Use lighter model (important for free tier)
-  const model = 'gemini-2.5-flash';
-
-  const contents = [
-    { role: 'user', parts: [{ text: prompt }] },
-  ];
-
-  // ✅ Wrap API call with retry logic
-  const responseStream = await withRetry(() =>
-    ai.models.generateContentStream({
-      model,
-      config,
-      contents,
-    })
-  );
-
-  let fullResponse = '';
-
-  try {
-    for await (const chunk of responseStream) {
-      if (chunk.text) {
-        fullResponse += chunk.text;
-      }
-    }
-  } catch (streamErr) {
-    console.error('Stream error:', streamErr);
-    throw new Error('Error while receiving response stream');
-  }
-
-  // ⚠️ Keep plain text (safer). Format later in UI if needed
-  return fullResponse;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data.text;
 }
 
 export default main;
+
+export async function streamMain(prompt, onChunk, signal) {
+  const res = await fetch(`${API_URL}/api/chat/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+    signal,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Request failed");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop(); // keep any incomplete event for the next read
+
+    for (const evt of events) {
+      if (!evt.startsWith("data: ")) continue;
+      const payload = evt.slice(6);
+      if (payload === "[DONE]") return;
+      const parsed = JSON.parse(payload);
+      if (parsed.error) throw new Error(parsed.error);
+      onChunk(parsed.text);
+    }
+  }
+}
