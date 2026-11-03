@@ -32,14 +32,14 @@ const ContextProvider = (props) => {
     
     const onSent = async (rawPrompt) => {
   const prompt = (rawPrompt ?? input).trim();
-  if (!prompt) return;               // ignore empty submissions
+  if (!prompt) return;               
 
   setLoading(true);
   setResponse(true);
   setResponseData("");
   setRecentPrompt(prompt);
 
-  // 👉 avoid duplicates: add prompt only if not already first
+
   setPrevPrompts(prev =>
     prev[0] === prompt ? prev : [prompt, ...prev.filter(p => p !== prompt)]
   );
