@@ -22,10 +22,9 @@ const ContextProvider = (props) => {
   setLoading(false);
   setResponse(false);
 
-  // ⬇️  clear what the UI remembers
-  setInput("");        // empty the text field
-  setRecentPrompt(""); // forget last shown prompt
-  setResponseData(""); // optional: clear old answer
+  setInput("");        
+  setRecentPrompt(""); 
+  setResponseData("");
 };
 
 
@@ -47,7 +46,7 @@ const ContextProvider = (props) => {
   try {
     const res = await main(prompt);
 
-    // ‑‑‑ format response like you did before ‑‑‑
+    
     const boldConverted = res
       .split("**")
       .map((part, i) => (i % 2 ? `<b>${part}</b>` : part))
@@ -66,7 +65,7 @@ const ContextProvider = (props) => {
   }
 };
     
-    // onSent("What is NextJS?")
+    
     
     const contextValue = {
       prevPrompts,
