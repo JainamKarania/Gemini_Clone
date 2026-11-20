@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-// ✅ Throttle control
+
 let lastCallTime = 0;
 const MIN_DELAY = 2000; // 2 seconds between requests
 
