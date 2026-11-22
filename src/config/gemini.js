@@ -6,9 +6,9 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 
 let lastCallTime = 0;
-const MIN_DELAY = 2000; // 2 seconds between requests
+const MIN_DELAY = 2000; 
 
-// ✅ Retry helper with exponential backoff
+
 async function withRetry(fn, retries = 3, delay = 1000) {
   try {
     return await fn();
