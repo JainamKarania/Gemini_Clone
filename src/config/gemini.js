@@ -1,13 +1,10 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-import { GoogleGenAI } from '@google/genai';
-
+import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-
 let lastCallTime = 0;
-const MIN_DELAY = 2000; 
-
+const MIN_DELAY = 2000;
 
 async function withRetry(fn, retries = 3, delay = 1000) {
   try {
@@ -15,7 +12,7 @@ async function withRetry(fn, retries = 3, delay = 1000) {
   } catch (err) {
     if (retries === 0) throw err;
 
-    console.warn('Retrying after error:', err.message);
+    console.warn("Retrying after error:", err.message);
 
     await new Promise((res) => setTimeout(res, delay));
     return withRetry(fn, retries - 1, delay * 2);
@@ -23,32 +20,27 @@ async function withRetry(fn, retries = 3, delay = 1000) {
 }
 
 async function main(prompt) {
-  // ✅ Throttle check
   const now = Date.now();
   if (now - lastCallTime < MIN_DELAY) {
-    throw new Error('Rate limit: Too many requests. Please wait a moment.');
+    throw new Error("Rate limit: Too many requests. Please wait a moment.");
   }
   lastCallTime = now;
 
-  const config = { responseMimeType: 'text/plain' };
+  const config = { responseMimeType: "text/plain" };
 
-  // ✅ Use lighter model (important for free tier)
-  const model = 'gemini-2.5-flash';
+  const model = "gemini-2.5-flash";
 
-  const contents = [
-    { role: 'user', parts: [{ text: prompt }] },
-  ];
+  const contents = [{ role: "user", parts: [{ text: prompt }] }];
 
-  // ✅ Wrap API call with retry logic
   const responseStream = await withRetry(() =>
     ai.models.generateContentStream({
       model,
       config,
       contents,
-    })
+    }),
   );
 
-  let fullResponse = '';
+  let fullResponse = "";
 
   try {
     for await (const chunk of responseStream) {
@@ -57,11 +49,10 @@ async function main(prompt) {
       }
     }
   } catch (streamErr) {
-    console.error('Stream error:', streamErr);
-    throw new Error('Error while receiving response stream');
+    console.error("Stream error:", streamErr);
+    throw new Error("Error while receiving response stream");
   }
 
-  // ⚠️ Keep plain text (safer). Format later in UI if needed
   return fullResponse;
 }
 
