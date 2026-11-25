@@ -53,7 +53,7 @@ const AIFeatures = () => {
       id="features"
       className="relative py-24 px-6 bg-[#020617] overflow-hidden"
     >
-      {/* Background Glow */}
+      
       <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-600/10 blur-[130px] rounded-full"></div>
 
