@@ -58,7 +58,7 @@ const AIFeatures = () => {
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-600/10 blur-[130px] rounded-full"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Heading */}
+        
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -83,7 +83,7 @@ const AIFeatures = () => {
           </p>
         </motion.div>
 
-        {/* Cards */}
+        
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <motion.div
